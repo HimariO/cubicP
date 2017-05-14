@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    <!-- All of the Node.js APIs are available in this renderer process. -->
+    We are using node <script>document.write(process.versions.node)</script>,
+    Chromium <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+    <audio controls>
+        <source src="file.mp3">
+    </audio>
+    <br/>
+    <button id="p">play</button>
+    <button id="s">pause</button>
+    <!-- <div id="d"></div> -->
+
+  </body>
+
+  <script src="./three.min.js"></script>
+  <script>
+    // You can also require other files to run in this process
+    require('./renderer.js')
+  </script>
+
+  <script src="./visulizer.js"></script>
+  <script src="./audio.js"></script>
+
+
+  <script>
+
+  var d = document.getElementById('d');
+  // for(var i=0; i<256; i++){
+  //   d.innerHTML += '<div></div>';
+  // }
+  var dd = document.querySelectorAll('#d div');
+
+  var timer;
+  var s = document.getElementById('s');
+  var p = document.getElementById('p');
+
+  var audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+  var myAudio = document.querySelector('audio');
+  myAudio.volume = 0.5
+  var source = audioCtx.createMediaElementSource(myAudio);
+  var analyser = audioCtx.createAnalyser();
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+
+  analyser.fftSize = 2048;
+  var bufferLength = analyser.frequencyBinCount;
+  var dataArray = new Uint8Array(analyser.fftSize);
+  analyser.getByteFrequencyData(dataArray);
+  function update() {
+    // console.log(dataArray);
+    dataArray = new Uint8Array(analyser.fftSize);
+    analyser.getByteFrequencyData(dataArray);
+    for(var j=0; j<256; j+=32){
+      channels[j/32].update(Math.floor(dataArray[j] / 4))
+    }
+    timer = setTimeout(update,15);
+  };
+
+  s.onclick = function(){
+    myAudio.pause();
+    clearTimeout(timer);
+  };
+
+  p.onclick = function(){
+    myAudio.play();
+    update();
+  };
+
+  update();
+
+
+
+  </script>
+
+</html>
